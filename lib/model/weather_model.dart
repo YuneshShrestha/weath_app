@@ -1,11 +1,17 @@
-class WeatherModel {
-  WeatherModel({
+import 'package:equatable/equatable.dart';
+
+class WeatherModel extends Equatable {
+  const WeatherModel({
     required this.location,
     required this.current,
   });
 
   final Location? location;
   final Current? current;
+
+  const WeatherModel.empty()
+      : location = const Location.empty(),
+        current = const Current.empty();
 
   factory WeatherModel.fromJson(Map<String, dynamic> json) {
     return WeatherModel(
@@ -15,10 +21,14 @@ class WeatherModel {
           json["current"] == null ? null : Current.fromJson(json["current"]),
     );
   }
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [location, current];
 }
 
-class Current {
-  Current({
+class Current extends Equatable {
+  const Current({
     required this.tempC,
     required this.condition,
   });
@@ -26,6 +36,10 @@ class Current {
   final double? tempC;
 
   final Condition? condition;
+
+  const Current.empty()
+      : tempC = 0.0,
+        condition = const Condition.empty();
 
   factory Current.fromJson(Map<String, dynamic> json) {
     return Current(
@@ -35,6 +49,10 @@ class Current {
           : Condition.fromJson(json["condition"]),
     );
   }
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [tempC, condition];
 }
 
 double parseIntOrNullToDouble(dynamic value) {
@@ -49,7 +67,7 @@ double parseIntOrNullToDouble(dynamic value) {
   }
 }
 
-class Condition {
+class Condition extends Equatable {
   Condition({
     required this.text,
     required this.icon,
@@ -59,7 +77,10 @@ class Condition {
   final String? text;
   final String? icon;
   final int? code;
-
+  const Condition.empty()
+      : text = 'Sunny',
+        icon = '//cdn.weatherapi.com/weather/64x64/day/116.png',
+        code = 0;
   factory Condition.fromJson(Map<String, dynamic> json) {
     return Condition(
       text: json["text"].toString(),
@@ -67,9 +88,13 @@ class Condition {
       code: json["code"],
     );
   }
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [text, icon, code];
 }
 
-class Location {
+class Location extends Equatable {
   Location({
     required this.name,
     required this.country,
@@ -78,11 +103,17 @@ class Location {
   final String? name;
 
   final String? country;
-
+  const Location.empty()
+      : name = 'Dharan',
+        country = 'Nepal';
   factory Location.fromJson(Map<String, dynamic> json) {
     return Location(
       name: json["name"],
       country: json["country"],
     );
   }
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [name, country];
 }
