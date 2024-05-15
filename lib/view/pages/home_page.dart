@@ -1,9 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_weather_app/controller/save_and_get_location.dart';
 import 'package:flutter_weather_app/controller/weather_controller.dart';
 import 'package:flutter_weather_app/view/widgets/temperature_view_widget.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late WeatherController weatherController;
+  late TextEditingController searchController;
 
   void getData(String value, TextEditingController searchController,
       WeatherController weatherController) {
@@ -45,16 +49,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  void dispose() {
-    weatherController.dispose();
-
-    super.dispose();
-  }
-
-  @override
   void initState() {
     super.initState();
-    Get.put(WeatherController());
+    searchController = TextEditingController();
+    Get.put(WeatherController(
+      http.Client(),
+    ));
     weatherController = Get.find<WeatherController>();
 
     Future.microtask(() async {
@@ -65,9 +65,9 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       } else {
         String myPosition = await getCurrentLocation();
+        SaveAndGetLocation.saveLocation(myPosition);
         if (mounted) {
-
-        weatherController.getWeather(myPosition);
+          weatherController.getWeather(myPosition);
         }
       }
     });
@@ -75,77 +75,73 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final searchController = TextEditingController();
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 34,
-                vertical: 16.0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    flex: 7,
-                    child: TextField(
-                        controller: searchController,
-                        decoration: const InputDecoration(
-                          hintText: 'Search by city name, lat/long, etc.',
-                          border: OutlineInputBorder(
+        child: Center(
+          child: Column(
+            children: [
+              const SizedBox(height: 32.0),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                height: 50.0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      flex: 7,
+                      child: TextField(
+                          controller: searchController,
+                          decoration: const InputDecoration(
+                            hintText: 'Search by city name, lat/long, etc.',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(16.0),
+                              bottomLeft: Radius.circular(16.0),
+                            )),
+                          ),
+                          onSubmitted: (value) {
+                            getData(value, searchController, weatherController);
+                          }),
+                    ),
+                    SizedBox(
+                      height: 50.0,
+                      child: Obx(() {
+                        return IconButton(
+                          color: Colors.white,
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.grey[800],
+                            shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(16.0),
-                            bottomLeft: Radius.circular(16.0),
-                          )),
-                        ),
-                        onSubmitted: (value) {
-                          getData(value, searchController, weatherController);
-                        }),
-                  ),
-                  Flexible(
-                    flex: 2,
-                    fit: FlexFit.tight,
-                    child: Obx(() {
-                      return IconButton(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 20.4,
-                        ),
-                        color: Colors.white,
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.grey[800],
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.only(
-                              topRight: Radius.circular(16.0),
-                              bottomRight: Radius.circular(16.0),
+                                topRight: Radius.circular(16.0),
+                                bottomRight: Radius.circular(16.0),
+                              ),
                             ),
                           ),
-                        ),
-                        onPressed: weatherController.isLoading.value
-                            ? null
-                            : () {
-                                getData(searchController.text, searchController,
-                                    weatherController);
-                              },
-                        icon: weatherController.isLoading.value
-                            ? const CircularProgressIndicator()
-                            : const Icon(Icons.search),
-                      );
-                    }),
-                  ),
-                ],
+                          onPressed: weatherController.isLoading.value
+                              ? null
+                              : () {
+                                  getData(searchController.text,
+                                      searchController, weatherController);
+                                },
+                          icon: weatherController.isLoading.value
+                              ? const CircularProgressIndicator()
+                              : const Icon(Icons.search),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 32.0),
-            Obx(
-              () => TemperatureViewWidget(
-                temperature: '${weatherController.temperature}',
-                weather: weatherController.weather.value,
-                weatherIcon: 'https:${weatherController.weatherIcon.value}',
+              const SizedBox(height: 32.0),
+              Obx(
+                () => TemperatureViewWidget(
+                  temperature: '${weatherController.temperature}',
+                  weather: weatherController.weather.value,
+                  weatherIcon: 'https:${weatherController.weatherIcon.value}',
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

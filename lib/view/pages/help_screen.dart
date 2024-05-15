@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_weather_app/controller/check_if_skip.dart';
 import 'package:flutter_weather_app/view/pages/home_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -13,9 +14,11 @@ class HelpScreen extends StatefulWidget {
 class _HelpScreenState extends State<HelpScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    Future.delayed(
+    //  check if screen is in top of stack
+
+    if (!Navigator.canPop(context)) {
+      Future.delayed(
       const Duration(seconds: 5),
       () {
         Navigator.pushReplacementNamed(
@@ -24,6 +27,8 @@ class _HelpScreenState extends State<HelpScreen> {
         );
       },
     );
+    }
+    
   }
 
   @override
@@ -57,11 +62,14 @@ class _HelpScreenState extends State<HelpScreen> {
                 height: 20,
               ),
               OutlinedButton(
-                onPressed: () {
-                  Navigator.pushReplacementNamed(
-                    context,
-                    HomeScreen.routeName,
-                  );
+                onPressed: () async {
+                  await CheckIfSkip.skip();
+                  if (context.mounted) {
+                    Navigator.pushReplacementNamed(
+                      context,
+                      HomeScreen.routeName,
+                    );
+                  }
                 },
                 child: const Text('Skip'),
               ),

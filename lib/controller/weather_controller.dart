@@ -7,6 +7,10 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 class WeatherController extends GetxController {
+  WeatherController(
+    this.client,
+  );
+  final http.Client client;
   final RxString temperature = '0°C'.obs;
   final RxString weather = 'Sunny'.obs;
   final RxString weatherIcon =
@@ -16,7 +20,7 @@ class WeatherController extends GetxController {
   Future<void> getWeather(String param) async {
     isLoading.value = true;
     try {
-      var response = await http.get(
+      var response = await client.get(
         Uri.parse(
           '$kBaseUrl?key=$kApiKey&q=$param',
         ),

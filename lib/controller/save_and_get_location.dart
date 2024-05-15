@@ -8,6 +8,7 @@ class SaveAndGetLocation {
 
   static Future<String> getLocation() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('location') ?? 'Jakarta';
+    return prefs.getString('location') ?? '';
   }
 }
+
