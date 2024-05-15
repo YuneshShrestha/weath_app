@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_weather_app/controller/save_and_get_location.dart';
 import 'package:flutter_weather_app/controller/weather_controller.dart';
 import 'package:flutter_weather_app/view/widgets/temperature_view_widget.dart';
 import 'package:geolocator/geolocator.dart';
@@ -13,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-   late WeatherController weatherController;
+  late WeatherController weatherController;
 
   void getData(String value, TextEditingController searchController,
       WeatherController weatherController) {
@@ -24,35 +25,53 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
- Future<String> getCurrentLocation() async {
-  LocationPermission permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
+  Future<String> getCurrentLocation() async {
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
-      return Future.error('Location permissions are denied');
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
     }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    return '${position.latitude},${position.longitude}';
   }
 
-  if (permission == LocationPermission.deniedForever) {
-    return Future.error(
-      'Location permissions are permanently denied, we cannot request permissions.');
-  } 
-  Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  @override
+  void dispose() {
+    weatherController.dispose();
 
-  return '${position.latitude},${position.longitude}';
-}
+    super.dispose();
+  }
 
   @override
-void initState() {
-  super.initState();
-  Get.put(WeatherController());
-  weatherController = Get.find<WeatherController>();
+  void initState() {
+    super.initState();
+    Get.put(WeatherController());
+    weatherController = Get.find<WeatherController>();
 
-  Future.microtask(() async {
-    String myPosition = await getCurrentLocation();
-    weatherController.getWeather(myPosition);
-  });
-}
+    Future.microtask(() async {
+      var location = await SaveAndGetLocation.getLocation();
+      if (location.trim().isNotEmpty) {
+        if (mounted) {
+          weatherController.getWeather(location);
+        }
+      } else {
+        String myPosition = await getCurrentLocation();
+        if (mounted) {
+
+        weatherController.getWeather(myPosition);
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

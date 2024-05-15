@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_weather_app/constants/url.dart';
+import 'package:flutter_weather_app/controller/save_and_get_location.dart';
 import 'package:flutter_weather_app/model/weather_model.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -20,7 +21,7 @@ class WeatherController extends GetxController {
           '$kBaseUrl?key=$kApiKey&q=$param',
         ),
       );
-      print(response.body);
+
       if (response.statusCode == 200) {
         WeatherModel weatherModel =
             WeatherModel.fromJson(jsonDecode(response.body));
@@ -29,6 +30,7 @@ class WeatherController extends GetxController {
             'Failed to load weather data';
         weatherIcon.value = weatherModel.current?.condition!.icon ??
             '//cdn.weatherapi.com/weather/64x64/day/116.png';
+        await SaveAndGetLocation.saveLocation(param);
       } else {
         weather.value = 'Failed to load weather data';
         Get.snackbar('Error', 'Failed to load weather data');
@@ -40,4 +42,6 @@ class WeatherController extends GetxController {
       isLoading.value = false;
     }
   }
+
+
 }
