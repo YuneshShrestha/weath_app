@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_weather_app/controller/check_if_skip.dart';
 import 'package:flutter_weather_app/view/pages/help_screen.dart';
-import 'package:get/get.dart';
 
 class TemperatureViewWidget extends StatelessWidget {
   const TemperatureViewWidget(
